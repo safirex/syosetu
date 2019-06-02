@@ -18,7 +18,6 @@ headers = {"user-agent": "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML
 rep=requests.get(url,headers=headers)
 #目标小说主页源码
 rep.encoding='utf-8'
-#获取每章信息（章节，URL
 html=rep.text
 
 #返回title
@@ -37,9 +36,10 @@ dl=re.findall(r'<a href="/'+url1+'/'+'.*?'+'/">.*?</a>',html,re.S)
 #返回需要链接
 chapter_list=re.findall(r'<a href="(.*?)">(.*?)<',str(dl))
 print(chapter_list)
-#新建小说
+#新建小说目录
 os.mkdir('%s'%title)
-
+#章节提示以防乱序
+i=1
 for x in chapter_list:
     chapter_title=x[1]
     chapter_url='https://ncode.syosetu.com%s'%x[0]
@@ -64,7 +64,8 @@ for x in chapter_list:
     chapter_title=validateTitle(chapter_title)
     print(chapter_title)
     #写入
-    file = open('%s\%s.txt'%(title,chapter_title), 'w+', encoding='utf-8')
+    file = open('%s\%d_%s.txt'%(title,i,chapter_title), 'w+', encoding='utf-8')
+    i+=1#章节自增
     file.write(chapter_title)
     file.write(writer)
     file.write(chapter_content)
