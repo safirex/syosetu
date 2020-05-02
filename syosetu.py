@@ -17,22 +17,19 @@ def createFile(title,i,chapter_title,chapter_content):
 
 
 def batchDL(title,num):
-    
-    
+    global html
     #返回作者
+    print(url1)
     writer=re.findall(r'<div class="novel_writername">(.*?)</div>',html,re.S)[0]
     print(writer[0])
     #正则匹配
     #返回匹配链接
     dl=re.findall(r'<a href="/'+url1+'/'+'.*?'+'/">.*?</a>',html,re.S)
-    
-    
-    
-    
-    
-    os.mkdir('%s'%title)
-    
-    
+    print(dl[0])
+    dirlist=os.listdir(os.getcwd())
+    if title not in dirlist:
+        os.mkdir('%s'%title)
+
     #search all chapters from num-1 to max
     #返回需要链接
     chapter_list=re.findall(r'<a href="(.*?)">(.*?)<',str(dl))[num-1:]
@@ -44,6 +41,7 @@ def batchDL(title,num):
         chapter_title=x[1]
         chapter_url='https://ncode.syosetu.com%s'%x[0]
         print(chapter_url)
+        
         chapter_rep=requests.get(chapter_url,headers=headers)
         chapter_rep.encoding='utf-8'
         chapter_html=chapter_rep.text
@@ -61,7 +59,7 @@ def batchDL(title,num):
         chapter_content = chapter_content.replace('</rt>', '')
         chapter_content = chapter_content.replace('<ruby>', '')
         chapter_content = chapter_content.replace('</ruby>', '')
-        
+
         chapter_title=validateTitle(chapter_title)
         replacething=re.findall('_u3000', chapter_title)
         for y in replacething:
@@ -69,7 +67,7 @@ def batchDL(title,num):
         print(chapter_title)
         createFile(title,i,chapter_title,chapter_content)
         i+=1
-    
+
 
 #标题规范化
 def validateTitle(title):
@@ -87,45 +85,107 @@ def getLangage():
         return 'chinese'
 
 
+
+
+
+headers={}
+html=''
+def processNovel(url1,dltype):
+    global html
+    global headers
+    
+    url='https://ncode.syosetu.com/%s/'%url1
+    print(url)
+    headers = {"user-agent": "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36"}
+    #模拟 http
+    rep=requests.get(url,headers=headers)
+    #目标小说主页源码
+    rep.encoding='utf-8'
+    html=rep.text
+
+    #返回title
+    title=re.findall(r'<p class="novel_title">(.*?)</p>',html)
+    #标题规范化
+    title=validateTitle(title[0])
+    print(title)
+    title=title+" "+url1
+
+    #define the type of download
+    if (dltype==1):
+        batchDL(title,1)
+    else:
+        ddlType=input('batch [b]/batch from chapter [bf]')
+
+        if (ddlType=='b'):
+            batchDL(title,1)
+            return 0
+        elif (ddlType=='bf'):
+            chapnum=int(input('chapter (min=1):'))
+            batchDL(title,chapnum)
+            return 0
+        else:
+            input("try again")
+            return -1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 if(platform.system()=='Windows'):
     print("is windows")
     language=getLangage()  #windows dependent (maybe)
 
 if(language=='english'):
-    txtUrl1=' input the novel TOC page number:'
+    txtUrl1=' input the novel TOC page number or type input '
 else:
     txtUrl1='请输入小说url编号：'
-    
-    
-    
+
+
+
+
+
+
+
+
+inputfile=open('input.txt','r+', encoding='utf-8')
+inputlist=inputfile.read()
+length=len(inputlist)
+i=0
+novelTab=[]
+while i<length :
+    print(inputlist[i:i+7])
+    listindex=i+7
+    novelTab.append(inputlist[i:listindex])
+    i+=8 #count the carriage return char
+
+
+
+
+
+
+
 #目标小说URL
+
 url1=input(txtUrl1)
-url='https://ncode.syosetu.com/%s/'%url1
-print(url)
-headers = {"user-agent": "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36"}
-#模拟 http
-rep=requests.get(url,headers=headers)
-#目标小说主页源码
-rep.encoding='utf-8'
-html=rep.text
 
-#返回title
-title=re.findall(r'<p class="novel_title">(.*?)</p>',html)
-#标题规范化
-title=validateTitle(title[0])
-print(title)
-title=title+" "+url1
-#define the type of download
-ddlType=input('batch [b]/batch from chapter [bf]')
-
-if (ddlType=='b'):
+if (url1=='input'):
     
-    batchDL(title,1)
-elif (ddlType=='bf'):
-    chapnum=int(input('chapter (min=1):'))
-    
-    print(type(chapnum))
-    batchDL(title,chapnum)
+    print('processing input.txt')
+    for Novel in novelTab:
+        url1=Novel
+        print(len(Novel))
+        processNovel(Novel,1)
 else:
-    input("try again") 
-
+    print(len(url1))
+    print(str(type(url1)))
+    processNovel(url1,0)
