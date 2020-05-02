@@ -7,17 +7,18 @@ import ctypes
 import os
 import platform
 
-def createFile(title,i,chapter_title,chapter_content,writer):
+def createFile(title,i,chapter_title,chapter_content):
      #写入
     file = open('%s\%d_%s.txt'%(title,i,chapter_title), 'w+', encoding='utf-8')
+    i+=1#章节自增
     file.write(chapter_title)
-    file.write(writer)
     file.write(chapter_content)
     file.close()
 
 
 def batchDL(title,num):
-        
+    
+    
     #返回作者
     writer=re.findall(r'<div class="novel_writername">(.*?)</div>',html,re.S)[0]
     print(writer[0])
@@ -25,16 +26,21 @@ def batchDL(title,num):
     #返回匹配链接
     dl=re.findall(r'<a href="/'+url1+'/'+'.*?'+'/">.*?</a>',html,re.S)
     
-    #返回需要链接
-    chapter_list=re.findall(r'<a href="(.*?)">(.*?)<',str(dl))[num:]
-    print(chapter_list)
-    #新建小说目录
+    
+    
+    
+    
     os.mkdir('%s'%title)
+    
+    
+    #search all chapters from num-1 to max
+    #返回需要链接
+    chapter_list=re.findall(r'<a href="(.*?)">(.*?)<',str(dl))[num-1:]
+    print(chapter_list)
     #章节提示以防乱序
-    i=num+1
+    i=num
     chapter_list = chapter_list
     for x in chapter_list:
-        
         chapter_title=x[1]
         chapter_url='https://ncode.syosetu.com%s'%x[0]
         print(chapter_url)
@@ -61,8 +67,9 @@ def batchDL(title,num):
         for y in replacething:
             chapter_title=chapter_title.replace(y,' ')
         print(chapter_title)
-        createFile(title,i,chapter_title,chapter_content,writer)
+        createFile(title,i,chapter_title,chapter_content)
         i+=1
+    
 
 #标题规范化
 def validateTitle(title):
@@ -76,13 +83,16 @@ def getLangage():
     lg=locale.windows_locale[ windll.GetUserDefaultUILanguage()]
     if(lg.find('zh')==-1):
         return 'english'
+    else:
+        return 'chinese'
 
 
 if(platform.system()=='Windows'):
+    print("is windows")
     language=getLangage()  #windows dependent (maybe)
 
 if(language=='english'):
-    txtUrl1=' input the novel TOC page url:'
+    txtUrl1=' input the novel TOC page number:'
 else:
     txtUrl1='请输入小说url编号：'
     
@@ -104,14 +114,16 @@ title=re.findall(r'<p class="novel_title">(.*?)</p>',html)
 #标题规范化
 title=validateTitle(title[0])
 print(title)
-
+title=title+" "+url1
 #define the type of download
-ddlType=input('batch [b]/batch after chapter [bf]:')
+ddlType=input('batch [b]/batch from chapter [bf]')
 
 if (ddlType=='b'):
-    batchDL(title,0)
+    
+    batchDL(title,1)
 elif (ddlType=='bf'):
-    chapnum=int(input('chapter:'))
+    chapnum=int(input('chapter (min=1):'))
+    
     print(type(chapnum))
     batchDL(title,chapnum)
 else:
