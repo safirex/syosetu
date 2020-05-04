@@ -1,4 +1,4 @@
-
+# coding: utf-8
 import requests
 #正则表达式模块
 import re
@@ -41,7 +41,7 @@ def batchDL(title,num):
         chapter_title=x[1]
         chapter_url='https://ncode.syosetu.com%s'%x[0]
         print(chapter_url)
-        
+
         chapter_rep=requests.get(chapter_url,headers=headers)
         chapter_rep.encoding='utf-8'
         chapter_html=chapter_rep.text
@@ -93,7 +93,7 @@ html=''
 def processNovel(url1,dltype):
     global html
     global headers
-    
+
     url='https://ncode.syosetu.com/%s/'%url1
     print(url)
     headers = {"user-agent": "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36"}
@@ -108,7 +108,7 @@ def processNovel(url1,dltype):
     #标题规范化
     title=validateTitle(title[0])
     print(title)
-    title=title+" "+url1
+    title=url1+" "+title
 
     #define the type of download
     if (dltype==1):
@@ -150,15 +150,9 @@ if(language=='english'):
 else:
     txtUrl1='请输入小说url编号：'
 
-
-
-
-
-
-
-
 inputfile=open('input.txt','r+', encoding='utf-8')
 inputlist=inputfile.read()
+inputfile.close()
 length=len(inputlist)
 i=0
 novelTab=[]
@@ -168,18 +162,12 @@ while i<length :
     novelTab.append(inputlist[i:listindex])
     i+=8 #count the carriage return char
 
-
-
-
-
-
-
 #目标小说URL
 
 url1=input(txtUrl1)
 
 if (url1=='input'):
-    
+
     print('processing input.txt')
     for Novel in novelTab:
         url1=Novel

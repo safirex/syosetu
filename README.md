@@ -1,3 +1,5 @@
+[english version](README_en.md)
+
 使用方法：
 
 粘贴小说的编号
